@@ -4,7 +4,7 @@ import random
 import itertools
 
 parser = OptionParser()
-parser.add_option("-e", "--eta", dest="eta_value", help="size of steps", metavar="VALUE", type="float")
+parser.add_option("-e", "--eta", dest="eta_value", help="size of steps", metavar="VALUE", type="float", default=0.01)
 
 (options,args) = parser.parse_args()
 
@@ -26,7 +26,7 @@ def perceptron_output(weights,values):
     acc = 0
     for i in range(len(weights)):
         acc += weights[i]*values[i]
-    return 1 if( acc > 0 ) else -1
+    return 1 if( acc > 0.5 ) else 0
 
 def get_small_random_value():
     """
@@ -41,7 +41,8 @@ def gradient_descent(eta,examples):
     # initialize weights with small random integers
     weight = [get_small_random_value() for i in range(len(examples[0].values))]
     #while condition is not met
-    while True:
+    iteration_counter = 0
+    while iteration_counter < 100:
         # initialize delta of weights 
         weight_delta = [0 for i in range(len(examples[0].values))]
         for example in examples:
@@ -52,13 +53,11 @@ def gradient_descent(eta,examples):
         for weight_idx in range(len(weight)):
             weight[weight_idx] += weight_delta[weight_idx]
 
+        iteration_counter+=1
+
         # termination criterion: terminate if there is a weight_delta which is greater than eta
-        terminate = True
-        for d in weight_delta:
-            if d > eta:
-                terminate = False
-        if terminate:
-            break
+
+
     return weight
 
 def f(x,y,z):
@@ -71,6 +70,9 @@ for x in itertools.product('01',repeat=3):
     examples.append(Example(arguments, f(*arguments)))
 
 # run gradient descent on the given examples
-weights = gradient_descent(0.1,examples)
+weights = gradient_descent(options.eta_value,examples)
 for w in weights:
     print(w)
+
+for example in examples:
+    print("{} {} {}".format(example.values,example.outcome,perceptron_output(weights,example.values)))
